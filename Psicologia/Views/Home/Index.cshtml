@@ -1,0 +1,779 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta name="viewport" content="width=device-width" />
+    <title>Psicologia</title>
+    <style type="text/css">
+        body {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+    </style>
+
+</head>
+<body>
+    <center>
+        <h1>Dashboard</h1>
+    </center>
+
+    <h2>Psicología</h2>
+
+    Paciente:
+    <select id="ddlPaciente">
+        <option value="7">Berta López</option>
+        <option value="8">Rodrigo Diaz</option>
+        <option value="9">Rosalba Arancibia</option>
+        <option value="10">Rony Pereira</option>
+
+    </select>
+    <table id="rblChartType" border="0">
+        <tr>
+            <td><input type="radio" name="ChartType" value="1" checked="checked" />Barra</td>
+            <td><input type="radio" name="ChartType" value="2" />Radar</td>
+        </tr>
+    </table>
+
+    <!--<div id="dvChart" style="width:50%; position:relative;">
+    </div>
+    <div id="dvChart2" style="width:50%; position:relative;">
+    </div>-->
+
+    <table border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+            <td width="600">
+                <div id="dvChart">
+                </div>
+                <div id="dvMensaje" align="center"></div>
+            </td>
+            <td width="600">
+                <div id="dvChart2">
+                </div>
+                <div id="dvMensaje2" align="center"></div>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <table border=1 cellspacing="0">
+                    <tr>
+                        <th colspan="2">CSF</th>
+                    </tr>
+                    <tr>
+                        <th>Ingreso</th>
+                        <th>Egreso</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="dvTabla" align="center"></div>
+
+                        </td>
+                        <td>
+                            <div id="dvTabla2" align="center">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div id="dvCambio">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td align="center">
+                <table border=1 cellspacing="0">
+                    <tr>
+                        <th colspan="2">CSM</th>
+                    </tr>
+                    <tr>
+                        <th>Ingreso</th>
+                        <th>Egreso</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="dvTabla3" align="center">
+                            </div>
+                        </td>
+                        <td>
+                            <div id="dvTabla4" align="center">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div id="dvCambio2">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width="400">
+                <div id="dvChart3">
+                </div>
+            </td>
+            <!--<td width="600">
+                <div id="dvChart4">
+                </div>
+            </td>-->
+        </tr>
+    </table>
+
+
+    <h3>Promedio total pacientes</h3>
+    <table id="rblChartType2" border="0">
+        <tr>
+            <td><input type="radio" name="ChartType2" value="1" checked="checked" />Barra</td>
+            <td><input type="radio" name="ChartType2" value="2" />Radar</td>
+        </tr>
+    </table>
+
+
+    <table border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+            <td width="800">
+                <div id="dvChart4">
+                </div>
+            </td>
+            <td width="800" align="center">
+                <table border=1 cellspacing="0">
+                    <tr>
+                        <th colspan="2">Total de pacientes graficados</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="dvTablaPromedio" align="center"></div>
+
+                        </td>
+                    </tr>
+                    <tr></tr>
+                </table>
+            </td>
+
+        </tr>
+    </table>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/excanvas/r3/excanvas.js" type="text/javascript"></script>
+    <script src="//cdn.jsdelivr.net/chart.js/0.2/Chart.js" type="text/javascript"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.5/chartjs-plugin-annotation.js"></script>
+    <script src="https://cdn.rawgit.com/chartjs/Chart.js/master/samples/utils.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            LoadChart();
+            LoadChart2();
+            LoadChart3();
+            $("#ddlPaciente").bind("change", function () {
+                LoadChart();
+                LoadChart2();
+                LoadChart3();
+            });
+            $("#rblChartType input").bind("click", function () {
+                LoadChart();
+                LoadChart2();
+                LoadChart3();
+            });
+        });
+        function LoadChart() {
+            var chartType = parseInt($("#rblChartType input:checked").val());
+            var ingreso = [];
+            var egreso = [];
+            var datachart = {
+                labels: ["Funcion Fisica", "Rol Fisico", "Dolor Corporal", "Salud General"],
+                datasets: [
+                    {
+                        label: "Ingreso",
+                        backgroundColor: "rgba(90,193,208,0.3)",
+                        borderColor: "rgba(151,187,205,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(151,187,205,1)",
+                        hoverBorderColor: "rgba(151,187,205,0.5)",
+                        data: ingreso
+                    },
+                    {
+                        label: "Egreso",
+                        backgroundColor: "rgba(215,220,67,0.3)",
+                        borderColor: "rgba(220,220,220,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(220,220,220,1)",
+                        hoverBorderColor: "rgba(220,220,220,0.5)",
+                        data: egreso
+                    }
+                ]
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Home/AjaxMethod",
+                data: "{Paciente: '" + $("#ddlPaciente").val() + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                success: function (response) {
+                    $("#dvChart").html("");
+                    //$("#dvLegend").html("");
+                    $("#dvTabla").html("");
+                    $("#dvTabla2").html("");
+                    $("#dvCambio").html("");
+                    $("#dvMensaje").html("");
+
+                    if (response[9] == ',') {
+                        var div2 = $("<div />");
+                        //div.css("font-size", "18px");
+                        div2.html("<p class='caja'>Faltan datos para mostrar este dashboard</p>");
+                        $("#dvMensaje").append(div2);
+                    };
+
+                    //window.alert(response[9]);
+
+
+                    var data = eval(response);
+                    //var data = (eval("(" + response.d + ")"));
+                    var el = document.createElement('canvas');
+                    $("#dvChart")[0].appendChild(el);
+
+
+                    //window.alert(data);
+                    //Fix for IE 8
+                    if ($.browser.msie && $.browser.version == "8.0") {
+                        G_vmlCanvasManager.initElement(el);
+                    }
+
+                    for (var i = 0; i < data.length; i++) {
+                        ingreso.push(data[i].value0, data[i].value1, data[i].value2, data[i].value3);
+                        egreso.push(data[i].value4, data[i].value5, data[i].value6, data[i].value7);
+                    }
+
+                    //INGRESO PROMEDIO
+                    var suma = 0;
+                    for (var x = 0; x < ingreso.length; x++) {
+                        suma += ingreso[x];
+                    }
+                    var promedio = suma / ingreso.length;
+                    $("#dvTabla").append(promedio);
+
+
+                    //EGRESO PROMEDIO
+                    var suma2 = 0;
+                    for (var k = 0; k < egreso.length; k++) {
+                        suma2 += egreso[k];
+                    }
+                    var promedio2 = suma2 / egreso.length;
+                    $("#dvTabla2").append(promedio2);
+
+
+                    if ((promedio2 - promedio) > 10) {
+                        $("#dvCambio").append("Hay un cambio significativo");
+                    }
+                    else {
+                        $("#dvCambio").append("No hay un cambio significativo");
+                    }
+
+
+
+
+                    //console.log(ingreso);
+                    //window.alert(ingreso);
+
+                    var ctx = el.getContext('2d');
+                    var userStrengthsChart;
+
+                    switch (chartType) {
+                        case 1:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: datachart,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "SF-36 I"
+                                    },
+                                    scales: {
+                                        yAxes: [
+                                            {
+                                                ticks: {
+                                                    //fontFamily: "Roboto Mono",
+                                                    //fontColor: "#556F7B",
+                                                    //fontStyle: "bold",
+                                                    beginAtZero: true,
+                                                    //maxTicksLimit: 5,
+                                                    //padding: 20
+                                                },
+                                                gridLines: {
+                                                    //drawTicks: false,
+                                                    //display: false,
+                                                    //drawBorder: false
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }
+                            });
+                            break;
+                        case 2:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'radar',
+                                data: datachart,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "SF-36 I"
+                                    },
+                                    /*scale: {
+                                        ticks: {
+                                            beginAtZero: true,
+                                        }
+                                    }*/
+                                }
+                            });
+                            break;
+
+                    }
+                },
+                failure: function (response) {
+                    alert('Ocurrió un error.');
+                },
+
+            });
+        }
+
+
+
+        function LoadChart2() {
+            var chartType = parseInt($("#rblChartType input:checked").val());
+            var ingreso2 = [];
+            var egreso2 = [];
+            var datachart2 = {
+                labels: ["Vitalidad", "Función Social", "Rol Emocional", "Salud Mental"],
+                datasets: [
+                    {
+                        label: "Ingreso",
+                        backgroundColor: "rgba(90,193,208,0.3)",
+                        borderColor: "rgba(151,187,205,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(151,187,205,1)",
+                        hoverBorderColor: "rgba(151,187,205,0.5)",
+                        data: ingreso2
+                    },
+                    {
+                        label: "Egreso",
+                        backgroundColor: "rgba(215,220,67,0.3)",
+                        borderColor: "rgba(220,220,220,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(220,220,220,1)",
+                        hoverBorderColor: "rgba(220,220,220,0.5)",
+                        data: egreso2
+                    }
+                ]
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Home/AjaxMethod2",
+                data: "{Paciente: '" + $("#ddlPaciente").val() + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                success: function (response) {
+                    $("#dvChart2").html("");
+                    $("#dvTabla3").html("");
+                    $("#dvTabla4").html("");
+                    $("#dvCambio2").html("");
+                    //$("#dvLegend").html("");
+                    //$("#dvTabla").html("");
+                    $("#dvMensaje2").html("");
+
+                    if (response[9] == ',') {
+                        var divII = $("<div />");
+                        //div.css("font-size", "18px");
+                        divII.html("<p class='caja'>Faltan datos para mostrar este dashboard</p>");
+                        $("#dvMensaje2").append(divII);
+                    };
+
+
+
+                    var data = eval(response);
+                    //var data = (eval("(" + response.d + ")"));
+                    var el = document.createElement('canvas');
+                    $("#dvChart2")[0].appendChild(el);
+
+
+                    //window.alert(data);
+                    //Fix for IE 8
+                    if ($.browser.msie && $.browser.version == "8.0") {
+                        G_vmlCanvasManager.initElement(el);
+                    }
+
+                    for (var i = 0; i < data.length; i++) {
+                        ingreso2.push(data[i].value0, data[i].value1, data[i].value2, data[i].value3);
+                        egreso2.push(data[i].value4, data[i].value5, data[i].value6, data[i].value7);
+                    }
+
+
+                    //INGRESO PROMEDIO
+                    var suma3 = 0;
+                    for (var x = 0; x < ingreso2.length; x++) {
+                        suma3 += ingreso2[x];
+                    }
+                    var promedio3 = suma3 / ingreso2.length;
+                    $("#dvTabla3").append(promedio3);
+
+
+                    //EGRESO PROMEDIO
+                    var suma4 = 0;
+                    for (var k = 0; k < egreso2.length; k++) {
+                        suma4 += egreso2[k];
+                    }
+                    var promedio4 = suma4 / egreso2.length;
+                    $("#dvTabla4").append(promedio4);
+
+
+                    if ((promedio4 - promedio3) > 10) {
+                        $("#dvCambio2").append("Hay un cambio significativo");
+                    }
+                    else {
+                        $("#dvCambio2").append("No hay un cambio significativo");
+                    }
+
+
+                    //console.log(ingreso);
+                    //window.alert(ingreso);
+
+                    var ctx = el.getContext('2d');
+                    var userStrengthsChart;
+
+                    switch (chartType) {
+                        case 1:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: datachart2,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "SF-36 II"
+                                    },
+                                    scales: {
+                                        yAxes: [
+                                            {
+                                                ticks: {
+                                                    //fontFamily: "Roboto Mono",
+                                                    //fontColor: "#556F7B",
+                                                    //fontStyle: "bold",
+                                                    beginAtZero: true,
+                                                    //maxTicksLimit: 5,
+                                                    //padding: 20
+                                                },
+                                                gridLines: {
+                                                    //drawTicks: false,
+                                                    //display: false,
+                                                    //drawBorder: false
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }
+                            });
+                            break;
+                        case 2:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'radar',
+                                data: datachart2,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "SF-36 II"
+                                    },
+                                    /*scale: {
+                                        ticks: {
+                                            beginAtZero: true,
+                                        }
+                                    }*/
+                                }
+                            });
+                            break;
+
+                    }
+                },
+                failure: function (response) {
+                    alert('Ocurrió un error.');
+                },
+
+            });
+        }
+
+
+
+        function LoadChart3() {
+            var chartType = parseInt($("#rblChartType input:checked").val());
+            var ingreso3 = [];
+            var egreso3 = [];
+            var datachart3 = {
+                labels: ["Ansiedad", "Depresión", "Sub escala Ansiedad", "Sub escala Depresión"],
+                datasets: [
+                    {
+                        label: "Ingreso",
+                        backgroundColor: "rgba(90, 99, 132, 0.6)",
+                        borderColor: "rgba(151,187,205,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(151,187,205,1)",
+                        hoverBorderColor: "rgba(151,187,205,0.5)",
+                        data: ingreso3
+                    },
+                    {
+                        label: "Egreso",
+                        backgroundColor: "rgba(240, 99, 132, 0.6)",
+                        borderColor: "rgba(240, 99, 132, 1)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(220,220,220,1)",
+                        hoverBorderColor: "rgba(220,220,220,0.5)",
+                        data: egreso3
+                    }
+                ]
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Home/AjaxMethod3",
+                data: "{Paciente: '" + $("#ddlPaciente").val() + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                success: function (response) {
+                    $("#dvChart3").html("");
+                    //$("#dvLegend").html("");
+                    //$("#dvTabla").html("");
+                    var data = eval(response);
+                    //var data = (eval("(" + response.d + ")"));
+                    var el = document.createElement('canvas');
+                    $("#dvChart3")[0].appendChild(el);
+
+
+                    //window.alert(data);
+                    //Fix for IE 8
+                    if ($.browser.msie && $.browser.version == "8.0") {
+                        G_vmlCanvasManager.initElement(el);
+                    }
+
+                    for (var i = 0; i < data.length; i++) {
+                        ingreso3.push(data[i].value0, data[i].value1, data[i].value2, data[i].value3);
+                        egreso3.push(data[i].value4, data[i].value5, data[i].value6, data[i].value7);
+                    }
+
+
+                    //console.log(ingreso);
+                    //window.alert(ingreso);
+
+                    var ctx = el.getContext('2d');
+                    var userStrengthsChart;
+
+                    switch (chartType) {
+                        case 1:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: datachart3,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "HAD"
+                                    },
+                                    scales: {
+                                        yAxes: [
+                                            {
+                                                ticks: {
+                                                    //fontFamily: "Roboto Mono",
+                                                    //fontColor: "#556F7B",
+                                                    //fontStyle: "bold",
+                                                    beginAtZero: true,
+                                                    //maxTicksLimit: 5,
+                                                    //padding: 20
+                                                },
+                                                gridLines: {
+                                                    //drawTicks: false,
+                                                    //display: false,
+                                                    //drawBorder: false
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }
+                            });
+                            break;
+                        case 2:
+                            userStrengthsChart = new Chart(ctx, {
+                                type: 'radar',
+                                data: datachart3,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "HAD"
+                                    },
+                                    scale: {
+                                        ticks: {
+                                            beginAtZero: true,
+                                        }
+                                    }
+                                }
+                            });
+                            break;
+
+                    }
+                },
+                failure: function (response) {
+                    alert('Ocurrió un error.');
+                },
+
+            });
+        }
+
+    </script>
+
+
+
+
+    <script type="text/javascript">
+
+
+        $(function () {
+            LoadChart4();
+            /*$("#ddlPaciente").bind("change", function () {
+                LoadChart();
+            });*/
+            $("#rblChartType2 input").bind("click", function () {
+                LoadChart4();
+            });
+        });
+        function LoadChart4() {
+            var chartType2 = parseInt($("#rblChartType2 input:checked").val());
+            var promingreso = [];
+            var promegreso = [];
+            var datachart4 = {
+                labels: ["Funcion Fisica", "Rol Fisico", "Dolor Corporal", "Salud General", "Vitalidad", "Función Social", "Rol Emocional", "Salud Mental"],
+                datasets: [
+                    {
+                        label: "Ingreso",
+                        backgroundColor: "rgba(90,193,208,0.3)",
+                        borderColor: "rgba(151,187,205,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(151,187,205,1)",
+                        hoverBorderColor: "rgba(151,187,205,0.5)",
+                        data: promingreso
+                    },
+                    {
+                        label: "Egreso",
+                        backgroundColor: "rgba(215,220,67,0.3)",
+                        borderColor: "rgba(220,220,220,0.7)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(220,220,220,1)",
+                        hoverBorderColor: "rgba(220,220,220,0.5)",
+                        data: promegreso
+                    }
+                ]
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Home/AjaxMethod4",
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                success: function (response) {
+                    $("#dvChart4").html("");
+                    //$("#dvLegend").html("");
+                    $("#dvTablaPromedio").html("");
+                    var data = eval(response);
+                    var el = document.createElement('canvas');
+                    $("#dvChart4")[0].appendChild(el);
+
+
+                    //window.alert(data);
+                    //Fix for IE 8
+                    if ($.browser.msie && $.browser.version == "8.0") {
+                        G_vmlCanvasManager.initElement(el);
+                    }
+
+                    var cantidad_promedio = [];
+
+                    for (var i = 0; i < data.length; i++) {
+                        promingreso.push(data[i].value0, data[i].value1, data[i].value2, data[i].value3, data[i].value4, data[i].value5, data[i].value6, data[i].value7);
+                        promegreso.push(data[i].value8, data[i].value9, data[i].value10, data[i].value11, data[i].value12, data[i].value13, data[i].value14, data[i].value15);
+                        cantidad_promedio.push(data[i].value16);
+                    }
+                    $("#dvTablaPromedio").append(cantidad_promedio);
+
+                    //console.log(ingreso);
+                    //window.alert(ingreso);
+
+                    var ctx = el.getContext('2d');
+                    var userStrengthsChart2;
+
+                    switch (chartType2) {
+                        case 1:
+                            userStrengthsChart2 = new Chart(ctx, {
+                                type: 'bar',
+                                data: datachart4,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "Promedio total pacientes SF-36"
+                                    },
+                                    scales: {
+                                        yAxes: [
+                                            {
+                                                ticks: {
+                                                    //fontFamily: "Roboto Mono",
+                                                    //fontColor: "#556F7B",
+                                                    //fontStyle: "bold",
+                                                    beginAtZero: true,
+                                                    //maxTicksLimit: 5,
+                                                    //padding: 20
+                                                },
+                                                gridLines: {
+                                                    //drawTicks: false,
+                                                    //display: false,
+                                                    //drawBorder: false
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }
+                            });
+                            break;
+                        case 2:
+                            userStrengthsChart2 = new Chart(ctx, {
+                                type: 'radar',
+                                data: datachart4,
+                                options: {
+                                    title: {
+                                        display: true,
+                                        text: "Promedio total pacientes SF-36"
+                                    },
+                                    /*scale: {
+                                        ticks: {
+                                            beginAtZero: true,
+                                        }
+                                    }*/
+                                }
+                            });
+                            break;
+
+                    }
+                },
+                failure: function (response) {
+                    alert('Ocurrió un error.');
+                },
+
+            });
+        }
+
+    </script>
+
+    <!-- <dialog open>No se encuentran datos con estos parámetros</dialog>-->
+</body>
+</html>
+
+
+
